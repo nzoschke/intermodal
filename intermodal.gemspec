@@ -9,7 +9,6 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Noah Zoschke"]
   spec.email         = ["noah@heroku.com"]
   spec.summary       = %q{Development, build, test and release workflow for 12 factor apps, via Docker.}
-  spec.description   = %q{TODO: Write a longer description. Optional.}
   spec.homepage      = ""
   spec.license       = "MIT"
 
