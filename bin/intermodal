@@ -14,10 +14,10 @@ def abort(msg)
 end
 
 cmds = %w(detect build test verify release)
+cmd  = ARGV[0]
 
-abort "usage: intermodal #{cmds.join('|')} PATH" unless ARGV.length == 3 && cmds.include?(cmd)
+abort "usage: intermodal #{cmds.join('|')} PATH APP_NAME" unless ARGV.length == 3 && cmds.include?(cmd)
 
-cmd     = ARGV[0]
 path    = Pathname.new(ARGV[1]).realpath
 app     = ARGV[2]
 token   = ENV["HEROKU_AUTH_TOKEN"] || `heroku auth:token`.strip
