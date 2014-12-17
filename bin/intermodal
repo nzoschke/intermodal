@@ -8,7 +8,14 @@ require "net/https"
 require "pathname"
 require "yaml"
 
-ENV["LANG"] = "UTF-8"
+def abort(msg)
+  puts msg
+  exit 1
+end
+
+cmds = %w(detect build test verify release)
+
+abort "usage: intermodal #{cmds.join('|')} PATH" unless ARGV.length == 3 && cmds.include?(cmd)
 
 cmd     = ARGV[0]
 path    = Pathname.new(ARGV[1]).realpath
@@ -16,14 +23,6 @@ app     = ARGV[2]
 token   = ENV["HEROKU_AUTH_TOKEN"] || `heroku auth:token`.strip
 project = path.basename.sub(/[^a-zA-Z0-9]/, "")
 
-cmds = %w(detect build test verify release)
-
-def abort(msg)
-  puts msg
-  exit 1
-end
-
-abort "usage: intermodal #{cmds.join('|')} PATH" unless ARGV.length == 3 && cmds.include?(cmd)
 abort "error: PATH does not exist"               unless Dir.exists?  path
 abort "error: fig.yml does not exist"            unless File.exists? path.join("fig.yml")
 abort "error: DOCKER_HOST is not set"            unless ENV["DOCKER_HOST"]
