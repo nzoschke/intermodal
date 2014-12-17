@@ -25,7 +25,7 @@ project = path.basename.sub(/[^a-zA-Z0-9]/, "")
 
 abort "error: PATH does not exist"               unless Dir.exists?  path
 abort "error: fig.yml does not exist"            unless File.exists? path.join("fig.yml")
-abort "error: DOCKER_HOST is not set"            unless ENV["DOCKER_HOST"]
+# abort "error: DOCKER_HOST is not set"            unless ENV["DOCKER_HOST"]
 abort "error: heroku auth token does not exist"  unless token
 
 if cmd == "release"
