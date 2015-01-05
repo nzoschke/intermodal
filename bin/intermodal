@@ -16,7 +16,19 @@ end
 cmds = %w(detect build test verify release)
 cmd  = ARGV[0]
 
-abort "usage: intermodal #{cmds.join('|')} PATH APP_NAME" unless ARGV.length == 3 && cmds.include?(cmd)
+usage = <<EOF
+usage: intermodal <command> PATH [APP_NAME]
+
+Commands:
+  detect    Detect and generate a proper Dockerfile, fig.yml and circle.yml
+  build     Build the app in Docker or Boot2Docker
+  test      Run the app tests under a Docker and Fig environment
+  verify    Verify the container contents are valid for Heroku compatibility
+  release   Release a copy of the container to Heroku as APP_NAME
+EOF
+
+abort usage if ARGV.length != 3 && cmd == "release"
+abort usage if ARGV.length != 2 && %w(detect build test verify).include?(cmd)
 
 path    = Pathname.new(ARGV[1]).realpath
 app     = ARGV[2]
