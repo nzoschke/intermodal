@@ -97,7 +97,6 @@ module Intermodal
 
   def self.build(path)
     abort "error: fig.yml does not exist"  unless File.exists? path.join("fig.yml")
-    abort "error: DOCKER_HOST is not set"  unless ENV["DOCKER_HOST"]
 
     Dir.chdir(path) do
       system "fig build"
@@ -106,7 +105,6 @@ module Intermodal
 
   def self.test(path)
     abort "error: fig.yml does not exist"  unless File.exists? path.join("fig.yml")
-    abort "error: DOCKER_HOST is not set"  unless ENV["DOCKER_HOST"]
 
     Dir.chdir(path) do
       system "fig run test"
