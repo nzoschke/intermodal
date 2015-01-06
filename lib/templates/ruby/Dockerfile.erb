@@ -24,7 +24,7 @@ RUN mkdir -p $GEM_PATH \
 
 <% if framework == "Rails" %>
 # Install Node package for Rails
-RUN curl http://nodejs.org/dist/v0.10.30/node-v0.10.30-linux-x64.tar.gz \
+RUN curl -s http://s3pository.heroku.com/node/v0.10.30/node-v0.10.30-linux-x64.tar.gz \
   | tar vxz -C /app/bin --strip-components=2 node-v0.10.30-linux-x64/bin/node
 <% end %>
 
