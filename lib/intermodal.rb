@@ -62,6 +62,15 @@ module Intermodal
 
         if name == "web"
           fig[name]["ports"] = ["5000:5000"]
+
+          env = path.join(".env")
+          if File.exists?(env)
+            File.read(env).split("\n").each do |line|
+              fig[name]["environment"] << line
+            end
+
+            puts "-----> Discovering .env"
+          end
         end
 
         if name == "test"
