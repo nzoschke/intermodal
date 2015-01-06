@@ -36,5 +36,7 @@ RUN bundle install --path vendor/bundle --binstubs /app/bin -j4
 COPY . /app/
 
 <% if framework == "Rails" %>
+# TODO: Why isn't rake installed until a second bundle install?
+RUN bundle install
 RUN bundle exec rake assets:precompile
 <% end %>
