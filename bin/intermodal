@@ -2,9 +2,11 @@
 
 require "intermodal"
 
+require "erb"
 require "docker"
 require "json"
 require "net/https"
+require "ostruct"
 require "pathname"
 require "yaml"
 
@@ -20,27 +22,49 @@ usage = <<EOF
 usage: intermodal <command> PATH [APP_NAME]
 
 Commands:
-  detect    Detect and generate a proper Dockerfile, fig.yml and circle.yml
+  detect    Detect and generate a proper Dockerfile, fig.yml
   build     Build the app in Docker or Boot2Docker
+  debug     Debug the app
   test      Run the app tests under a Docker and Fig environment
   verify    Verify the container contents are valid for Heroku compatibility
   release   Release a copy of the container to Heroku as APP_NAME
 EOF
 
-abort usage if ARGV.length != 3 && cmd == "release"
-abort usage if ARGV.length != 2 && %w(detect build test verify).include?(cmd)
+if    (ARGV.length == 2 && %w(detect build test verify).include?(cmd))
+elsif (ARGV.length == 3 && %w(release).include?(cmd))
+else
+  abort usage
+end
 
 path    = Pathname.new(ARGV[1]).realpath
 app     = ARGV[2]
-token   = ENV["HEROKU_AUTH_TOKEN"] || `heroku auth:token`.strip
 project = path.basename.sub(/[^a-zA-Z0-9]/, "")
+script  = Pathname.new(__FILE__)
 
-abort "error: PATH does not exist"               unless Dir.exists?  path
-abort "error: fig.yml does not exist"            unless File.exists? path.join("fig.yml")
-# abort "error: DOCKER_HOST is not set"            unless ENV["DOCKER_HOST"]
-abort "error: heroku auth token does not exist"  unless token
+abort "error: PATH does not exist" unless Dir.exists?  path
+
+require_relative script.join("..", "..", "lib", "intermodal")
+# require_relative "#{script}/../lib/intermodal"
+
+if cmd == "detect"
+  Intermodal.detect(path)
+end
+
+if cmd == "build"
+  Intermodal.build(path)
+end
+
+if cmd == "debug"
+end
+
+if cmd == "test"
+  Intermodal.test(path)
+end
 
 if cmd == "release"
+  token = ENV["HEROKU_AUTH_TOKEN"] || `heroku auth:token`.strip
+  abort "error: heroku auth token does not exist" unless token
+
   # assume `build` happened and the container is known
   # TODO: do this in net/https instead of docker / excon gems?
   containers = Docker::Util.parse_json Docker.connection.get("/containers/json", { all: true })
@@ -73,8 +97,8 @@ if cmd == "release"
 
   puts "Extract slug archive from container"
 
-  pid = `docker  run  -d #{image['Id']} tar cfvz /tmp/slug.tgz -C / --exclude=.git ./app`.strip
-  system "docker logs -f #{pid}"
+  pid = `docker run -d #{image['Id']} tar cfz /tmp/slug.tgz -C / --exclude=.git ./app`.strip
+  system "docker logs -f #{pid}" # wait on the command to exist
   system "docker cp #{pid}:/tmp/slug.tgz /tmp"
 
   puts "PUT slug archive to S3"

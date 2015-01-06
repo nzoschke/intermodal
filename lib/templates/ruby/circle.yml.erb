@@ -1,0 +1,26 @@
+machine:
+  services:
+    - docker
+
+dependencies:
+  override:
+    - sudo curl -L https://github.com/docker/fig/releases/download/1.0.1/fig-`uname -s`-`uname -m` -o /usr/local/bin/fig
+    - sudo chmod +x /usr/local/bin/fig
+    - docker pull postgres:latest
+    - docker pull heroku/cedar:14
+    - fig build test
+
+database:
+  override:
+    - /bin/true
+
+test:
+  override:
+    - fig run test
+
+deployment:
+  staging:
+    branch: master
+    commands:
+      - git clone https://github.com/nzoschke/intermodal.git ; cd intermodal ; gem build intermodal.gemspec && gem install intermodal-0.0.1.gem
+      - intermodal release . mixable-staging

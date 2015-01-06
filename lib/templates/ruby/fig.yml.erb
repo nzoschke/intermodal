@@ -1,0 +1,34 @@
+postgres:
+  image: postgres:latest
+  ports:
+    - "5432"
+web:
+  build: .
+  command: bundle exec puma --config config/puma.rb config.ru
+  volumes:
+    - .:/myapp
+  ports:
+    - "5000:5000"
+  links:
+    - postgres
+  environment:
+    - DATABASE_URL=postgres://postgres@postgres/myapi-development
+    - RACK_ENV=development
+    - TZ=UTC
+    - RAISE_ERRORS=true
+    - FORCE_SSL=false
+test:
+  build: .
+  command: bundle exec rake db:setup spec
+  volumes:
+    - .:/myapp
+  ports:
+    - "5000:5000"
+  links:
+    - postgres
+  environment:
+    - DATABASE_URL=postgres://postgres@postgres/myapi-test
+    - RACK_ENV=test
+    - TZ=UTC
+    - RAISE_ERRORS=true
+    - FORCE_SSL=false
