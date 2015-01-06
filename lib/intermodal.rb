@@ -29,6 +29,7 @@ module Intermodal
         "framework"         => framework
       )
       erb = ERB.new(template).result(namespace.instance_eval { binding })
+      erb.gsub!(/\n\n+/, "\n\n") # beautify ERB output
       File.write(path.join("Dockerfile"), erb)
 
       procfile = path.join("Procfile")
