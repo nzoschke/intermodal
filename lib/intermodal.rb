@@ -32,6 +32,9 @@ module Intermodal
       erb.gsub!(/\n\n+/, "\n\n") # beautify ERB output
       File.write(path.join("Dockerfile"), erb)
 
+      puts "-----> Creating fig.yml"
+      fig = {}
+
       procfile = path.join("Procfile")
       process_types = Hash[File.read(procfile).split("\n").map do |line|
         if line =~ /^([A-Za-z0-9_]+):\s*(.+)$/
@@ -39,13 +42,10 @@ module Intermodal
         end
       end.compact]
 
-      puts "-----> Discovering add-on services: Postgres"
       puts "-----> Discovering process types: #{process_types.keys.join(', ')}"
-      puts "-----> Creating fig.yml"
-
-      fig = {}
 
       if gems.include?("pg")
+        puts "-----> Discovering add-on services: Postgres"
         fig["postgres"] = {
           "image" => "postgres:latest",
           "ports" => [5432],
@@ -57,13 +57,28 @@ module Intermodal
           "build"       => ".",
           "command"     => cmd,
           "volumes"     => [".:myapp"],
-          "ports"       => ["5000:5000"],
           "environment" => []
         }
 
+        if name == "web"
+          fig[name]["ports"] = ["5000:5000"]
+        end
+
+        if name == "test"
+          env = path.join(".env.test")
+          if File.exists?(env)
+            File.read(env).split("\n").each do |line|
+              fig[name]["environment"] << line
+            end
+
+            puts "-----> Discovering .env.test"
+          end
+        end
+
         if gems.include?("pg")
+          project = path.basename.to_s.gsub(/[^a-zA-Z0-9]/, "")
           fig[name]["links"] = ["postgres"]
-          fig[name]["environment"] = ["DATABASE_URL=postgres://postgres@postgres/myapp-#{name}"]
+          fig[name]["environment"] << "DATABASE_URL=postgres://postgres@postgres/#{project}-#{name}"
         end
       end
 
